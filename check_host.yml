@@ -1,0 +1,14 @@
+- name: Check Host
+  hosts: all
+  tasks:
+    - name: Print inventory hostname
+      debug:
+        msg: "The inventory hostname is {{ inventory_hostname }}"
+
+    - name: Print ansible host
+      debug:
+        msg: "The ansible host IP is {{ ansible_host }}"
+
+    - name: Print custom host
+      debug:
+        msg: "The custom name for the host is {{ custom_name }}"

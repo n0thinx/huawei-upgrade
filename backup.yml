@@ -1,0 +1,82 @@
+---
+
+###################
+##### BACKUP #####
+###################
+
+
+- hosts: localhost
+
+  tasks:
+    - name: Get ansible date/time facts
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+
+    - name: Store DTG as fact
+      set_fact:
+        DTG: "{{ ansible_date_time.date }}"
+
+    - name: Create a config backup folder
+      file:
+        path: ./result/{{hostvars.localhost.DTG}}-running-config
+        state: directory
+      run_once: true
+    
+    - name: Create a config backup folder
+      file:
+        path: ./result/{{hostvars.localhost.DTG}}-startup-config
+        state: directory
+      run_once: true
+
+# Start Huawei Backup Process 
+
+- name: Main Play for Backup Huawei
+  hosts: Prod_Sites
+  serial: 3
+  gather_facts: false
+  connection: local
+
+  tasks:
+
+# Collect Huawei facts
+    
+    - name: Collect Huawei facts
+      ce_facts:
+        gather_subset: "!hardware"
+
+# Backup switch running config
+
+    - name: Backup switch current config  
+      ce_command:
+        commands: display current-configuration  
+      register: config
+
+    - name: Save output to ./backups/
+      copy:
+        content: "{{config.stdout[0]}}"
+        dest: "./result/{{hostvars.localhost.DTG}}-running-config/{{ custom_name }}.txt"
+      tags:
+        - runconfig
+
+# Backup switch startup config
+
+    - name: Backup switch saved config  
+      ce_command:
+        commands: display saved-configuration
+      register: config
+
+    - name: Save output to ./backups/
+      copy:
+        content: "{{config.stdout[0]}}"
+        dest: "./result/{{hostvars.localhost.DTG}}-startup-config/{{ custom_name }}.txt"
+      tags:
+        - startconfig
+
+# Save the running config 
+
+    - name: Save running config 
+      ce_command:
+        commands: save
+      vars:
+        ansible_command_timeout: 120

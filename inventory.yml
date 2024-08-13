@@ -1,0 +1,36 @@
+all:
+  children:
+    switches:
+      children: 
+        Prod_Sites:
+        Dev_Sites:
+
+    Prod_Sites:
+      children:
+        A:         
+      vars:
+        ansible_connection: network_cli
+        ansible_network_os: ce
+        ansible_user: admin
+        ansible_password: P@ssw0rd
+    
+    Dev_Sites:
+      children:
+        Z:         
+      vars:
+        ansible_connection: network_cli
+        ansible_network_os: ce
+        ansible_user: admin@default_admin
+        ansible_password: P@ssw0rd
+
+    A:
+      hosts:
+        SITE - A | SW - LSW1 | IP - 192.168.1.91:
+          ansible_host: '192.168.1.91'
+          custom_name: LSW1
+    
+    Z:
+      hosts:
+        SITE - A | SW - CE12800 - CE12800-1 | IP - 192.168.1.99:
+          ansible_host: '192.168.1.99'
+          custom_name: CE12800-1

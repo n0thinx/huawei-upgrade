@@ -1,0 +1,5 @@
+#ignore result folder
+result/
+
+#ignore full_upgrade.yml for development
+full_upgrade.yml

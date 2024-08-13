@@ -1,0 +1,53 @@
+---
+
+###################
+##### CHECK VER #####
+###################
+
+- hosts: localhost
+
+  tasks:
+    - name: Get ansible date/time facts
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+
+    - name: Store DTG as fact
+      set_fact:
+        DTG: "{{ ansible_date_time.date }}"
+
+    - name: Create a config backup folder
+      file:
+        path: ./result/{{hostvars.localhost.DTG}}-before
+        state: directory
+      run_once: true
+
+# Start Huawei Upgrade Process 
+
+- name: Main Play for Check Ver Huawei
+  hosts: Dev_Sites
+  serial: 3
+  gather_facts: false
+  connection: local
+ 
+  tasks:
+
+# Check image version
+
+      - name: "Do not collect hardware facts"
+        ce_facts:
+          gather_subset: all
+        register: output
+
+      - name: Save output to ./result/{{hostvars.localhost.DTG}}-before/
+        copy:
+          content: |
+            {% for key, value in output.ansible_facts.items() %}
+            {{ key }}: {{ value }}
+            {% endfor %}
+          dest: "./result/{{hostvars.localhost.DTG}}-before/{{ custom_name }}.txt"
+
+      - debug: 
+          msg: 
+          - "HOSTNAME      - {{ hostname }}"
+          - "IP ADDRESS    - {{ all_ipv4_addresses }}"
